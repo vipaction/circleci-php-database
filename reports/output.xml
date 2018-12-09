@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Project Test Suite" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.469584">
+    <testsuite name="App\Tests\Controller\HomeControllerTest" file="/vagrant/dummy-project/tests/Controller/HomeControllerTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.469584">
+      <testcase name="testShowPost" class="App\Tests\Controller\HomeControllerTest" classname="App.Tests.Controller.HomeControllerTest" file="/vagrant/dummy-project/tests/Controller/HomeControllerTest.php" line="9" assertions="1" time="0.469584"/>
+    </testsuite>
+  </testsuite>
+</testsuites>
