@@ -29,7 +29,19 @@ jobs:
       - run: mysql -h 127.0.0.1 -u root -e "GRANT ALL ON demo.* TO demo;"
 
       - run: composer install
+      - run: bin/console --env=test lint:twig templates
+      - run: bin/console --env=test lint:yaml config
 
       - run: bin/console --env=test doctrine:migrations:migrate -n
+      - run: bin/console --env=test doctrine:schema:validate
+
+      - restore_cache:
+          keys:
+            - phpunit-6.5
 
       - run: bin/phpunit
+
+      - save_cache:
+          key: phpunit-6.5
+          paths:
+            - bin/.phpunit
