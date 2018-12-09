@@ -1,0 +1,49 @@
+version: 2
+jobs:
+  build:
+    docker: 
+    - image: circleci/php:7.1-apache-stretch-browsers
+
+    - image: circleci/postgres:9.4-alpine-ram
+      environment:
+          POSTGRES_USER: demo
+          POSTGRES_PASSWORD: mypass
+          POSTGRES_DB: demo
+
+    steps:  
+    - checkout
+
+
+    - restore_cache:
+        keys:
+        - v1-php-vendor-{{ checksum "composer.lock" }}
+        - v1-php-vendor-
+
+    - run: composer install --no-scripts
+
+    - save_cache: 
+        key: v1-php-vendor-{{ checksum "composer.lock" }}
+        paths:
+        - vendor
+
+    - run: sudo mkdir -p /usr/share/man/man7
+    - run: sudo apt-get install -y postgresql-client libpq-dev
+    - run: sudo -E docker-php-ext-install pdo_pgsql
+   
+    - run: composer install
+    - run: bin/console --env=test lint:twig templates
+    - run: bin/console --env=test lint:yaml config
+
+    - run: bin/console --env=test doctrine:migrations:migrate -n
+    - run: bin/console --env=test doctrine:schema:validate
+
+    - restore_cache:
+        keys:
+        - phpunit-6.5
+
+    - run: bin/phpunit --log-junit ~/reports/tests.xml
+
+    - save_cache:
+        key: phpunit-6.5
+        paths:
+        - bin/.phpunit
