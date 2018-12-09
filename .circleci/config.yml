@@ -1,0 +1,35 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/php:7.1-apache-stretch-browsers
+      - image: circleci/mysql:5.7-ram
+
+    environment:
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_USER: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: true
+      MYSQL_PASSWORD: ~
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-php-vendor-{{ checksum "composer.lock" }}
+            - v1-php-vendor-
+      - run: composer install --no-scripts
+      - save_cache:
+          key: v1-php-vendor-{{ checksum "composer.lock" }}
+          paths:
+            - vendor
+      - run: sudo apt-get install -y mysql-client
+      - run: sudo -E docker-php-ext-install pdo_mysql
+      - run: mysql -h 127.0.0.1 -u root -e "CREATE DATABASE demo;"
+      - run: mysql -h 127.0.0.1 -u root -e "CREATE USER demo IDENTIFIED BY 'mypass';"
+      - run: mysql -h 127.0.0.1 -u root -e "GRANT ALL ON demo.* TO demo;"
+
+      - run: composer install
+
+      - run: bin/console --env=test doctrine:migrations:migrate -n
+
+      - run: bin/phpunit
